@@ -89,7 +89,7 @@ static bool	warned;
 static bool	errout;
 
 static char const *abbr(struct tm const *);
-ATTRIBUTE_REPRODUCIBLE static intmax_t delta(struct tm *, struct tm *);
+static intmax_t delta(struct tm *, struct tm *);
 static void dumptime(struct tm const *);
 static time_t hunt(timezone_t, time_t, time_t, bool);
 static void show(timezone_t, char *, time_t, bool);
@@ -97,7 +97,7 @@ static void showextrema(timezone_t, char *, time_t, struct tm *, time_t);
 static void showtrans(char const *, struct tm const *, time_t, char const *,
 		      char const *);
 static const char *tformat(void);
-ATTRIBUTE_REPRODUCIBLE static time_t yeartot(intmax_t);
+ATTRIBUTE_PURE_114833 static time_t yeartot(intmax_t);
 
 /* Is C an ASCII digit?  */
 static bool
@@ -134,7 +134,7 @@ size_overflow(void)
 
 /* Return A + B, exiting if the result would overflow either ptrdiff_t
    or size_t.  A and B are both nonnegative.  */
-ATTRIBUTE_REPRODUCIBLE static ptrdiff_t
+ATTRIBUTE_PURE_114833 static ptrdiff_t
 sumsize(ptrdiff_t a, ptrdiff_t b)
 {
 #ifdef ckd_add
@@ -162,7 +162,7 @@ xstrsize(char const *str)
 
 /* Return a pointer to a newly allocated buffer of size SIZE, exiting
    on failure.  SIZE should be positive.  */
-ATTRIBUTE_MALLOC static void *
+static void *
 xmalloc(ptrdiff_t size)
 {
   void *p = malloc(size);
@@ -228,7 +228,7 @@ localtime_r(time_t *tp, struct tm *tmp)
 # undef localtime_rz
 # define localtime_rz zdump_localtime_rz
 static struct tm *
-localtime_rz(timezone_t rz, time_t *tp, struct tm *tmp)
+localtime_rz(ATTRIBUTE_MAYBE_UNUSED timezone_t rz, time_t *tp, struct tm *tmp)
 {
   return localtime_r(tp, tmp);
 }
@@ -273,8 +273,8 @@ tzalloc(char const *val)
 
     while (*e++) {
 #  ifdef ckd_add
-      if (ckd_add(&initial_nenvptrs, initial_envptrs, 1)
-	  || INDEX_MAX < initial_envptrs)
+      if (ckd_add(&initial_nenvptrs, initial_nenvptrs, 1)
+	  || INDEX_MAX < initial_nenvptrs)
 	size_overflow();
 #  else
       if (initial_nenvptrs == INDEX_MAX / sizeof *environ)
@@ -304,7 +304,7 @@ tzalloc(char const *val)
 }
 
 static void
-tzfree(timezone_t initial_environ)
+tzfree(ATTRIBUTE_MAYBE_UNUSED timezone_t initial_environ)
 {
 # if !HAVE_SETENV
   environ = initial_environ;
@@ -326,7 +326,7 @@ gmtzinit(void)
        "Link GMT GMT0" line in the "backward" file, and which
        should work on all POSIX platforms.  The rest of zdump does not
        use the "GMT" abbreviation that comes from this setting, so it
-       is OK to use "GMT" here rather than the more-modern "UTC" which
+       is OK to use "GMT" here rather than the modern "UTC" which
        would not work on platforms that omit the "backward" file.  */
     gmtz = tzalloc("GMT");
     if (!gmtz) {
@@ -415,7 +415,7 @@ abbrok(const char *const abbrp, const char *const zone)
 
 /* Return a time zone abbreviation.  If the abbreviation needs to be
    saved, use *BUF (of size *BUFALLOC) to save it, and return the
-   abbreviation in the possibly-reallocated *BUF.  Otherwise, just
+   abbreviation in the possibly reallocated *BUF.  Otherwise, just
    return the abbreviation.  Get the abbreviation from TMP.
    Exit on memory allocation failure.  */
 static char const *
@@ -602,7 +602,7 @@ main(int argc, char *argv[])
 		if (!tz) {
 		  char const *e = strerror(errno);
 		  fprintf(stderr, _("%s: unknown timezone '%s': %s\n"),
-			  progname, argv[1], e);
+			  progname, argv[i], e);
 		  return EXIT_FAILURE;
 		}
 		if (now) {
@@ -932,7 +932,7 @@ showextrema(timezone_t tz, char *zone, time_t lo, struct tm *lotmp, time_t hi)
 # include <stdarg.h>
 
 /* A substitute for snprintf that is good enough for zdump.  */
-ATTRIBUTE_FORMAT((printf, 3, 4)) static int
+static int
 my_snprintf(char *s, size_t size, char const *format, ...)
 {
   int n;

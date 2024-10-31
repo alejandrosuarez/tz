@@ -1,4 +1,4 @@
-/* asctime and asctime_r a la POSIX and ISO C, except pad years before 1000.  */
+/* asctime a la ISO C.  */
 
 /*
 ** This file is in the public domain, so clarified as of
@@ -25,8 +25,8 @@
 ** leading zeroes to get the newline in the traditional place.
 ** The -4 ensures that we get four characters of output even if
 ** we call a strftime variant that produces fewer characters for some years.
-** The ISO C and POSIX standards prohibit padding the year,
-** but many implementations pad anyway; most likely the standards are buggy.
+** This conforms to recent ISO C and POSIX standards, which say behavior
+** is undefined when the year is less than 1000 or greater than 9999.
 */
 static char const ASCTIME_FMT[] = "%s %s%3d %.2d:%.2d:%.2d %-4s\n";
 /*
@@ -53,13 +53,25 @@ static char buf_asctime[2*3 + 5*INT_STRLEN_MAXIMUM(int) + 7 + 2 + 1 + 1];
 /* A similar buffer for ctime.
    C89 requires that they be the same buffer.
    This requirement was removed in C99, so support it only if requested,
-   as support is more likely to lead to bugs in badly-written programs.  */
+   as support is more likely to lead to bugs in badly written programs.  */
 #if SUPPORT_C89
 # define buf_ctime buf_asctime
 #else
 static char buf_ctime[sizeof buf_asctime];
 #endif
 
+/* Publish asctime_r and ctime_r only when supporting older POSIX.  */
+#if SUPPORT_POSIX2008
+# define asctime_static
+#else
+# define asctime_static static
+# undef asctime_r
+# undef ctime_r
+# define asctime_r static_asctime_r
+# define ctime_r static_ctime_r
+#endif
+
+asctime_static
 char *
 asctime_r(struct tm const *restrict timeptr, char *restrict buf)
 {
@@ -116,6 +128,7 @@ asctime(register const struct tm *timeptr)
 	return asctime_r(timeptr, buf_asctime);
 }
 
+asctime_static
 char *
 ctime_r(const time_t *timep, char *buf)
 {
